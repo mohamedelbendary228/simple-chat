@@ -11,6 +11,8 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   late final TextEditingController emailTextEditingController;
   late final TextEditingController passwordTextEditingController;
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  bool _isLogin = true;
 
   @override
   void initState() {
@@ -25,6 +27,7 @@ class _AuthScreenState extends State<AuthScreen> {
     passwordTextEditingController.dispose();
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -47,21 +50,61 @@ class _AuthScreenState extends State<AuthScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(16),
                     child: Form(
+                        key: _formKey,
                         child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        TextInputField(
-                          controller: emailTextEditingController,
-                          labelText: "Email Address",
-                          keyboardType: TextInputType.emailAddress,
-                        ),
-                        TextInputField(
-                          controller: passwordTextEditingController,
-                          labelText: "Password",
-                          obscureText: true,
-                        ),
-                      ],
-                    )),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            TextInputField(
+                              controller: emailTextEditingController,
+                              labelText: "Email Address",
+                              keyboardType: TextInputType.emailAddress,
+                              validator: (value) {
+                                if (value == null ||
+                                    value.trim().isEmpty ||
+                                    !value.contains("@")) {
+                                  return "Please enter a valid email address.";
+                                }
+                                return null;
+                              },
+                            ),
+                            TextInputField(
+                              controller: passwordTextEditingController,
+                              labelText: "Password",
+                              obscureText: true,
+                              validator: (value) {
+                                if (value == null || value.trim().length < 6) {
+                                  return "Password must be a least 6 characters long.";
+                                }
+                                return null;
+                              },
+                            ),
+                            const SizedBox(height: 12),
+                            ElevatedButton(
+                              onPressed: () {
+                                if(_formKey.currentState!.validate()){
+                                  print("Email ${emailTextEditingController.text}");
+                                  print("Password ${passwordTextEditingController.text}");
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Theme.of(context)
+                                    .colorScheme
+                                    .primaryContainer,
+                              ),
+                              child: Text(_isLogin ? "Login" : "Signup"),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  _isLogin = !_isLogin;
+                                });
+                              },
+                              child: Text(_isLogin
+                                  ? "Create an account"
+                                  : "I already have an account."),
+                            ),
+                          ],
+                        )),
                   ),
                 ),
               ),

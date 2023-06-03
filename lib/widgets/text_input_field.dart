@@ -7,6 +7,8 @@ class TextInputField extends StatelessWidget {
   final bool autocorrect;
   final TextCapitalization textCapitalization;
   final bool obscureText;
+  final String? Function(String? value)? validator;
+
   const TextInputField({
     Key? key,
     required this.controller,
@@ -15,12 +17,14 @@ class TextInputField extends StatelessWidget {
     this.autocorrect = true,
     this.textCapitalization = TextCapitalization.none,
     this.obscureText = false,
+    this.validator,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
+      validator: validator,
       decoration: InputDecoration(
         labelText: labelText,
       ),

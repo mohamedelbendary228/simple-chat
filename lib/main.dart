@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:simple_chat_app/view/auth_view.dart';
+import 'package:simple_chat_app/view/auth_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:simple_chat_app/view/landing_screen.dart';
 import 'firebase_options.dart';
 
 void main() async {
@@ -24,7 +25,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(seedColor: const Color.fromARGB(255, 63, 17, 177))
       ),
-      home: const AuthScreen(),
+      home: const LandingScreen(),
     );
   }
 }

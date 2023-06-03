@@ -1,5 +1,8 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:simple_chat_app/widgets/text_input_field.dart';
+
+final _firebase = FirebaseAuth.instance;
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({Key? key}) : super(key: key);
@@ -11,8 +14,9 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   late final TextEditingController emailTextEditingController;
   late final TextEditingController passwordTextEditingController;
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool _isLogin = true;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -28,6 +32,36 @@ class _AuthScreenState extends State<AuthScreen> {
     super.dispose();
   }
 
+  void _submit() async {
+    if (_formKey.currentState!.validate()) {
+      try {
+        setState(() {
+          _isLoading = true;
+        });
+        if (_isLogin) {
+          final userCredentials = await _firebase.signInWithEmailAndPassword(
+              email: emailTextEditingController.text.trim(),
+              password: passwordTextEditingController.text.trim());
+        } else {
+          final userCredentials =
+              await _firebase.createUserWithEmailAndPassword(
+                  email: emailTextEditingController.text.trim(),
+                  password: passwordTextEditingController.text.trim());
+          print("userCredentials $userCredentials");
+        }
+        setState(() {
+          _isLoading = false;
+        });
+      } on FirebaseAuthException catch (e) {
+        if (e.code == "email-already-in-use") {
+          //.. show error message
+        }
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(e.message ?? "Authentication failed.")));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -80,18 +114,15 @@ class _AuthScreenState extends State<AuthScreen> {
                             ),
                             const SizedBox(height: 12),
                             ElevatedButton(
-                              onPressed: () {
-                                if(_formKey.currentState!.validate()){
-                                  print("Email ${emailTextEditingController.text}");
-                                  print("Password ${passwordTextEditingController.text}");
-                                }
-                              },
+                              onPressed: _submit,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Theme.of(context)
                                     .colorScheme
                                     .primaryContainer,
                               ),
-                              child: Text(_isLogin ? "Login" : "Signup"),
+                              child: _isLoading
+                                  ? const CircularProgressIndicator()
+                                  : Text(_isLogin ? "Login" : "Signup"),
                             ),
                             TextButton(
                               onPressed: () {

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class AuthScreen extends StatefulWidget {
 class _AuthScreenState extends State<AuthScreen> {
   late final TextEditingController emailTextEditingController;
   late final TextEditingController passwordTextEditingController;
+  late final TextEditingController usernameTextEditingController;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   File? pickedImage;
   bool _isLogin = true;
@@ -27,6 +29,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void initState() {
     emailTextEditingController = TextEditingController();
     passwordTextEditingController = TextEditingController();
+    usernameTextEditingController = TextEditingController();
     super.initState();
   }
 
@@ -34,6 +37,7 @@ class _AuthScreenState extends State<AuthScreen> {
   void dispose() {
     emailTextEditingController.dispose();
     passwordTextEditingController.dispose();
+    usernameTextEditingController.dispose();
     super.dispose();
   }
 
@@ -62,11 +66,17 @@ class _AuthScreenState extends State<AuthScreen> {
             .child("${userCredentials.user!.uid}.jpg");
         await storageRef.putFile(pickedImage!);
         final imageUrl = await storageRef.getDownloadURL();
+
+        await FirebaseFirestore.instance
+            .collection("users")
+            .doc(userCredentials.user!.uid)
+            .set({
+          "username": usernameTextEditingController.text.trim(),
+          "email": emailTextEditingController.text.trim(),
+          "image_url": imageUrl,
+        });
         debugPrint("Image Url $imageUrl");
       }
-      setState(() {
-        _isLoading = false;
-      });
     } on FirebaseAuthException catch (e) {
       if (e.code == "email-already-in-use") {
         //.. show error message
@@ -75,6 +85,9 @@ class _AuthScreenState extends State<AuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(e.message ?? "Authentication failed.")));
     }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   @override
@@ -114,9 +127,19 @@ class _AuthScreenState extends State<AuthScreen> {
                               keyboardType: TextInputType.emailAddress,
                               validator: (value) {
                                 if (value == null ||
-                                    value.trim().isEmpty ||
+                                    value.isEmpty ||
                                     !value.contains("@")) {
                                   return "Please enter a valid email address.";
+                                }
+                                return null;
+                              },
+                            ),
+                            TextInputField(
+                              controller: usernameTextEditingController,
+                              labelText: "username",
+                              validator: (value) {
+                                if (value == null || value.isEmpty) {
+                                  return "Please enter username.";
                                 }
                                 return null;
                               },

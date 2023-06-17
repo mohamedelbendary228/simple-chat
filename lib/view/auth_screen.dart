@@ -134,16 +134,17 @@ class _AuthScreenState extends State<AuthScreen> {
                                 return null;
                               },
                             ),
-                            TextInputField(
-                              controller: usernameTextEditingController,
-                              labelText: "username",
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return "Please enter username.";
-                                }
-                                return null;
-                              },
-                            ),
+                            if (!_isLogin)
+                              TextInputField(
+                                controller: usernameTextEditingController,
+                                labelText: "username",
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Please enter username.";
+                                  }
+                                  return null;
+                                },
+                              ),
                             TextInputField(
                               controller: passwordTextEditingController,
                               labelText: "Password",
